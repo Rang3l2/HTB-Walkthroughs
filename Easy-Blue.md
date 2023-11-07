@@ -1,4 +1,25 @@
 
+# Blue
+
+- Hints
+- Walkthrough
+- Mitigrations
+
+## Hints
+
+# User
+
+1. Find the right wordlist.
+
+# Root
+
+3. Expand and look deeper.
+
+
+## Blue
+
+The tester started by runnign an Nmap scan to enumerate the host.
+
 ```
 └──╼ $nmap -A 10.10.10.40 
 Starting Nmap 7.93 ( https://nmap.org ) at 2023-11-06 18:27 EST
@@ -41,3 +62,13 @@ Host script results:
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 72.51 seconds
 ```
+
+The tester searched the OS version which showed that this version of windows is vulnerable to the eternalblue exploit that allows RCE on a vulnerable host. The tester found this github page, https://github.com/3ndG4me/AutoBlue-MS17-010,  that hosted several versions of the exploit. 
+
+
+
+
+
+
+
+## Mitigations 
