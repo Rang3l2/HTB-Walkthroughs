@@ -102,4 +102,5 @@ The tester searched the repositories and found Tomcat credentials in the 971f3aa
 
 ## Mitigations 
 
+https://www.acunetix.com/vulnerabilities/web/tomcat-path-traversal-via-reverse-proxy-mapping/
 ## References
