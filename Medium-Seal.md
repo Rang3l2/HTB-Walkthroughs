@@ -98,6 +98,46 @@ insert image on reg------------
 
 
 The tester searched the repositories and found Tomcat credentials in the 971f3aa3f0a0cc8aac12fd696d9631ca540f44c7 commit on the 5 May 2021. 
+The tester tested for different directories on port 443 using ffuf and found a manager directory.
+
+```
+┌─[rang3r@parrot]─[~/Projects/machines/seal]
+└──╼ $ffuf -w  '/home/rang3r/Documents/SecLists-master/Discovery/Web-Content/directory-list-lowercase-2.3-small.txt'    -k      -u  "https://seal.htb:443/FUZZ" -ic  
+
+        /'___\  /'___\           /'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v1.4.1-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : https://seal.htb:443/FUZZ
+ :: Wordlist         : FUZZ: /home/rang3r/Documents/SecLists-master/Discovery/Web-Content/directory-list-lowercase-2.3-small.txt
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200,204,301,302,307,401,403,405,500
+________________________________________________
+
+images                  [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 23ms]
+                        [Status: 200, Size: 19737, Words: 7425, Lines: 519, Duration: 27ms]
+admin                   [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 28ms]
+icon                    [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 21ms]
+css                     [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 24ms]
+js                      [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 24ms]
+manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30ms]
+                        [Status: 200, Size: 19737, Words: 7425, Lines: 519, Duration: 79ms]
+:: Progress: [81630/81630] :: Job [1/1] :: 480 req/sec :: Duration: [0:02:13] :: Errors: 0 ::
+```
+
+The directory was blocked, however the tester was able to access it by abusing tomcat path normalisation. This feature normalises URL paths, however by entering a the Tomcat path parameter character ";". The Nginx reverse proxy will not normalise the path therefore the requested page will be served. 
+By entering the URL "https://seal.htb/test/..;/manager/html" the server will actually  return  "https://seal.htb/manager/html" bypassing the restriction.
+
 
 
 ## Mitigations 
