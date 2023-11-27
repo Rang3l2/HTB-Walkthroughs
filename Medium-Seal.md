@@ -135,7 +135,8 @@ manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30m
 :: Progress: [81630/81630] :: Job [1/1] :: 480 req/sec :: Duration: [0:02:13] :: Errors: 0 ::
 ```
 
-The directory was blocked, however the tester was able to access it by abusing tomcat path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the requested page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This works to access the manager page however requires more work to upload a ".war" file. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon. The Tomcat service has the ability to 
+The Tomcat service has the ability to deploy a 
+The directory was blocked, however the tester was able to access it by abusing tomcat path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the requested page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This works to access the manager page however requires more work to upload a ".war" file. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon.  
 
 image of burp request ----------------------
 
