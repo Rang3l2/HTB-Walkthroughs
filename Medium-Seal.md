@@ -94,8 +94,7 @@ Nmap done: 1 IP address (1 host up) scanned in 15.66 seconds
 Port 8080 was hosting a Gitbucket instance. The Gitbucket instance is configured to allow registration. The Tester created an account which allowed them to view the repositories. 
 
 
-insert image on reg------------
-
+![web_error](https://private-user-images.githubusercontent.com/63368388/285897564-c1728f79-769f-4086-9637-5dd27cbfa6f4.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwOTQwOTAsIm5iZiI6MTcwMTA5Mzc5MCwicGF0aCI6Ii82MzM2ODM4OC8yODU4OTc1NjQtYzE3MjhmNzktNzY5Zi00MDg2LTk2MzctNWRkMjdjYmZhNmY0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDE0MDMxMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU1ZTA3ZTVlYTgxNDU0ZWU5NjAxMTlmNjdlYTFkMjQ0OWJmZmM1ZmMxMjJlNWJmMzY0NDQzMGUwMzAyMDAyNmEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.Y-jp4piU_j45nC9xjvgutWNHJGQQOA-44QpmcSdG2lI)
 
 The tester searched the repositories and found Tomcat credentials in the 971f3aa3f0a0cc8aac12fd696d9631ca540f44c7 commit on the 5 May 2021. 
 The tester tested for different directories on port 443 using ffuf and found a manager directory.
