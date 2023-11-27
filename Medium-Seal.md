@@ -7,6 +7,7 @@
 
 
 ## Walkthrough
+The tester started by scanning the host wiht nmap.
 
 ```
 └──╼ $nmap -p 22,443,8080 -A  10.10.10.250
@@ -97,7 +98,7 @@ Port 8080 was hosting a Gitbucket instance. The Gitbucket instance is configured
 ![web_error](https://private-user-images.githubusercontent.com/63368388/285897564-c1728f79-769f-4086-9637-5dd27cbfa6f4.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwOTQwOTAsIm5iZiI6MTcwMTA5Mzc5MCwicGF0aCI6Ii82MzM2ODM4OC8yODU4OTc1NjQtYzE3MjhmNzktNzY5Zi00MDg2LTk2MzctNWRkMjdjYmZhNmY0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDE0MDMxMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU1ZTA3ZTVlYTgxNDU0ZWU5NjAxMTlmNjdlYTFkMjQ0OWJmZmM1ZmMxMjJlNWJmMzY0NDQzMGUwMzAyMDAyNmEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.Y-jp4piU_j45nC9xjvgutWNHJGQQOA-44QpmcSdG2lI)
 
 The tester searched the repositories and found Tomcat credentials in the 971f3aa3f0a0cc8aac12fd696d9631ca540f44c7 commit on the 5 May 2021. 
-The tester tested for different directories on port 443 using ffuf and found the Tomcat manager directory.
+The tester used the ffuf tool to search for different directories on port 443 and found the Tomcat manager directory.
 
 ```
 ┌─[rang3r@parrot]─[~/Projects/machines/seal]
@@ -134,9 +135,9 @@ manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30m
 :: Progress: [81630/81630] :: Job [1/1] :: 480 req/sec :: Duration: [0:02:13] :: Errors: 0 ::
 ```
 
-The Tomcat service has the "WAR file to deploy" feature to deploy a .war file, which could be used to upload a malicious payload however the directory was blocked.
+Tomcat services have the "WAR file to deploy" feature to deploy a .war files, which could also be used to upload a malicious payload however the directory was blocked.
 
-The tester was able to access it by abusing tomcat path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the requested page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This works to access the manager page however requires more work to upload a ".war" file. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon.  
+The tester was able to access it by abusing Nginx path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the requested page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This works to access the manager page however requires more work to upload a ".war" file. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon, shown below.
 
 
 ![web_error](https://private-user-images.githubusercontent.com/63368388/285900777-51dad20f-c45f-4952-88dd-c7318ab0069c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwOTQ3NTEsIm5iZiI6MTcwMTA5NDQ1MSwicGF0aCI6Ii82MzM2ODM4OC8yODU5MDA3NzctNTFkYWQyMGYtYzQ1Zi00OTUyLTg4ZGQtYzczMThhYjAwNjljLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDE0MTQxMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWEzODlmYjk5ODgzZDFmN2M4MmI1OGFiMzk2MzUzOGQyNGQ1OTc2MjJmODZhMDY0OGE0MTU5ODI5Zjk2NjE0NzYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.SKic49GtzK-MompbSwuBjZ_ycukZz2iEzfQjk94QOBE)
@@ -334,8 +335,15 @@ seal
 
 ## Mitigations 
 
+1. Remove open register and keep repositories.
+2. Store git crentials locally, outside of the git environment.
+3. Configure the reverse proxy to reject paths that contain the Tomcat path parameter character ;.
+4. Review ACl to ensure that folder and file access is required
+5. Review account privileges to ensure they are required.
+
+
 ## References
 
 
 https://www.acunetix.com/vulnerabilities/web/tomcat-path-traversal-via-reverse-proxy-mapping/
-
+https://www.cherryservers.com/blog/how-to-run-remote-commands-with-ansible-shell-module
