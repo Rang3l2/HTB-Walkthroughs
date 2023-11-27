@@ -136,7 +136,7 @@ manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30m
 ```
 
 The directory was blocked, however the tester was able to access it by abusing tomcat path normalisation. This feature normalises URL paths, however by entering a the Tomcat path parameter character ";". The Nginx reverse proxy will not normalise the path therefore the requested page will be served. 
-By entering the URL "https://seal.htb/test/..;/manager/html" the server will actually  return  "https://seal.htb/manager/html" bypassing the restriction.
+By entering the URL "https://seal.htb/manager/test/..;/html" the server will actually  return "https://seal.htb/manager/html" bypassing the restriction. This works to access the manager page however requires more work to upload a war file. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon 
 
 
 
