@@ -9,7 +9,6 @@
 
 The tester started with an nmap scan to identify the open ports:
 
-
 ```
 └──╼ $nmap -p 22,80 -A 10.10.11.100 -oA BountyHunter_service
 Starting Nmap 7.93 ( https://nmap.org ) at 2023-11-08 12:29 EST
@@ -32,8 +31,9 @@ Nmap done: 1 IP address (1 host up) scanned in 9.21 seconds
 ┌─[rang3r@parrot]─[~/Projects/machines/BountyHunter]
 ```
 
-The tester browsed to port 80. Browsing the pages led to the "http://10.10.11.100/log_submit.php" page which contained a service for reporting bugs. The tester tested and discovered that the "data" parameter for the logging system is vulnerble to XML External Entity Injection. 
-This allowed the tester to create a custom entities and reference it in the request. The service encodes the request using base64 and percent-encoding (URL), therefore the tester used the decoder feature on burp suite to encode and decode requests. To decode requires URL then base64, to encode to be back to the server requires the reverse base64 then url.
+The tester browsed to port 80. Browsing the web site led to the "http://10.10.11.100/log_submit.php" page which contained a service for reporting bugs. The tester tested and discovered that the "data" parameter for the logging system is vulnerble to XML External Entity Injection. 
+
+This allowed the tester to create a custom entity and reference it in the request. The service encodes the request using base64 and percent-encoding (URL), therefore the tester used the decoder feature on burp suite to encode and decode requests. To decode requires URL then base64, to encode the request to be sent back to the server requires the reverse, base64 then url.
 
 ```unencodered data
 <?xml  version="1.0" encoding="ISO-8859-1"?>
@@ -73,8 +73,7 @@ If DB were ready, would have added:
 </table>
 ```
 
-You can see abovce that the service used refernced and printed the entity. In this case "This is a tast!". This vulnerablility enabled the tester to read local files using the "system" keyword to define as external reference, which was testered by viewing the passwd file using the below payload encoded into base64. 
-
+You can see above that the service used refernced and printed the entity. In this case "This is a tast!". This vulnerablility enabled the tester to read local files using the "system" keyword to define as external reference, which was tested by viewing the passwd file using the below payload encoded. 
 
 
 ```unencoded data 
@@ -148,9 +147,9 @@ usbmux:x:112:46:usbmux daemon,,,:/var/lib/usbmux:/usr/sbin/nologin
 </table>
 
 ```
-This showed that the service was also vulnerable to local file inclusion (LFI)
+This showed that the service was vulnerable to local file inclusion (LFI)
 
-The tester used the ffuf tool to discover the diffent web sites pages. Amoung others, the db.php file was found.
+The tester used the ffuf tool to discover the different web pages. Amoung others, the db.php file was found.
 
 
 ```
@@ -174,7 +173,7 @@ js                      [Status: 301, Size: 309, Words: 20, Lines: 10, Duration:
 ```
 
 
-The tester viewed the db.php file view using a modified version of the payload. As the file was a php file it needed to be encoded in base64 as the page contains characters that break the XML format.
+The tester viewed the db.php file using a modified version of the payload. As the file was a php file it needed to be encoded in base64 as the page contains characters that break the XML format.
 The tester used the php wrapper "php://filter/convert.base64-encode/" to fetch in the file and return it in base64.
 
 
@@ -216,7 +215,7 @@ If DB were ready, would have added:
 
 ```
 
-The tester decoded the base64 to show the contents of the db.php file obtaining a password.
+The tester decoded the base64 to show the contents of the db.php file, obtaining a password.
 
 ```
 <?php
@@ -253,7 +252,7 @@ bountyhunter
 development@bountyhunter:~$ 
 ```
 
-The development account is able to run the ticketValidator as root.
+The development account is able to run the ticketValidator program as root.
 
 ```
 development@bountyhunter:/opt/skytrain_inc$ sudo -l
@@ -280,7 +279,7 @@ The 33th line of code is what needs to be looked at, it requires the remainder o
 **18+__import__('os').system('bash')**
 ```
 
-The asterisk sysmbols are removed by the script. Next is the  18. This, after using the modulo operator against 7 will have a remainder of 4, with will clear the scripts check on line 33. The rest of the payload simply imports the "os" module and calling the function system to execute the bash command. This will spawn a root shell as the script is running.
+The asterisk sysmbols are removed by the script. Next is the  18. This, after using the modulo operator against 7 will have a remainder of 4, which will clear the scripts check on line 33. The rest of the payload simply imports the "os" module and calling the function system to execute the bash command. This will spawn a root shell in the middle of the script running process.
 
 
 ```The ticket that will spawn a bash shell.
