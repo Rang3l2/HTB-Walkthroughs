@@ -1,25 +1,19 @@
 
 # Blue
 
-- Hints
+- Introduction 
 - Walkthrough
 - Mitigrations
 - References 
 
-## Hints
 
-# User
+## Introduction 
 
-1. Find the right wordlist.
-
-# Root
-
-3. Expand and look deeper.
-
+The Blue machine on HTB is a simple yet poignant box that demonstrates the severety of the eternalblue vulnerability. A vulnerability in SMBv1 that allows specially crafted packets to be sent to the host server.  
 
 ## Blue
 
-The tester started by runnign an Nmap scan to enumerate the host.
+The tester started by running an Nmap scan to enumerate the host.
 
 ```
 └──╼ $nmap -A 10.10.10.40 
@@ -64,7 +58,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 72.51 seconds
 ```
 
-The tester searched the OS version which showed that this version of windows is vulnerable to the eternalblue exploit that allows RCE on a vulnerable host. The tester used the metasploit module "ms17_010_eternalblue" to exploit this vulnerablility. 
+The tester researched the OS version, which was shown in the nmap scan, and found that this version of windows is vulnerable to the eternalblue exploit that allows RCE on a vulnerable host. The tester used the metasploit module "ms17_010_eternalblue" to exploit this vulnerablility. 
 
 
 ```
@@ -148,7 +142,6 @@ Server username: NT AUTHORITY\SYSTEM
 ```
 
 Once executed the module returns a system level shell.
-
 
 
 
