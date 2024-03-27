@@ -14,7 +14,7 @@ The Bountyhunter host gives a good look at the issue that can arise from the XML
 
 ## Summary 
 
-The target host was found to have three major issues. First the bur sumbitting process contained a vulnerability 
+The target host was found to have three major issues. First the bug submitting process contained a vulnerability that allowed the tester to read files on the server, leaking sensitive data. This can be mitigated by disabling unneeded features and updating software. Next the tester found a script on the server which was used to validate train tickets. This validator was vulnerable to malicious instructions being smuggled within a forged ticket. Thirdly the validator was allowed to run at an administrator level, meaning instructions were ran at the high security level.
 
 ## BountyHunter
 
