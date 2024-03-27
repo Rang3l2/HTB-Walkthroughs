@@ -9,11 +9,15 @@
 
 ## Introduction 
 
-The Blue machine on HTB is a simple yet poignant box that demonstrates the severety of the eternalblue vulnerability. A vulnerability in SMBv1 that allows specially crafted packets to be sent to the host server.  
+The Blue machine on HTB is a simple yet poignant box that demonstrates the severity of the eternalblue vulnerability. A vulnerability in SMBv1 that allows specially crafted packets to be sent to the host server.  
+
+## Summary 
+
+The testing of the Blue host uncovered a severe vulnerability in the a communication Protocol on the target host which could basically give a malicious actor complete control on the host in question. Fortunately, the vulnerability has an official patch that can be applied but blocking the service maybe a helpful temporary and short term fix.
 
 ## Blue
 
-The tester started by running an Nmap scan to enumerate the host.
+The tester started by running an Nmap scan to enumerate the host services.
 
 ```
 └──╼ $nmap -A 10.10.10.40 
@@ -58,8 +62,7 @@ Service detection performed. Please report any incorrect results at https://nmap
 Nmap done: 1 IP address (1 host up) scanned in 72.51 seconds
 ```
 
-The tester researched the OS version, which was shown in the nmap scan, and found that this version of windows is vulnerable to the eternalblue exploit that allows RCE on a vulnerable host. The tester used the metasploit module "ms17_010_eternalblue" to exploit this vulnerablility. 
-
+The tester researched the OS version, which was shown in the nmap scan, and found that this version of windows is vulnerable to the eternalblue exploit which allows RCE on a vulnerable host. The tester used the metasploit module "ms17_010_eternalblue" to exploit this vulnerablility. 
 
 ```
 [msf](Jobs:0 Agents:0) exploit(windows/smb/ms17_010_eternalblue) >> options
@@ -141,13 +144,11 @@ Server username: NT AUTHORITY\SYSTEM
 
 ```
 
-Once executed the module returns a system level shell.
-
-
+Once executed, the module returns a system level shell giving the tester control of the system.
 
 ## Mitigations 
 
-- until patched block port 445
+- Until patched, block port 445
 - Install microsoft offical patch 
 
 References
