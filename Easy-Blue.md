@@ -1,7 +1,8 @@
 
 # Blue
 
-- Introduction 
+- Introduction
+- Summary
 - Walkthrough
 - Mitigrations
 - References 
