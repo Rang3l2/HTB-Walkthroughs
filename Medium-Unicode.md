@@ -8,7 +8,7 @@
 
 ## Walkthrough
 
-The tester started by performing an nmap scan.
+The tester started by performing an nmap scan in order to uncover the running services with open ports.
 
 ```
 # Nmap 7.93 scan initiated Sun Dec  3 13:31:08 2023 as: nmap -p 80,22 -A -oA service_scan 10.10.11.126
