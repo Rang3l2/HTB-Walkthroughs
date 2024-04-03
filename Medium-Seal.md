@@ -1,6 +1,8 @@
 
 # Seal
 
+- Introduction
+- Summary
 - Walkthrough
 - Mitigrations
 - References
