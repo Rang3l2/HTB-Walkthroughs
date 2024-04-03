@@ -7,7 +7,7 @@
 
 ## Introduction 
 
-The seal box offers a great example of the importance of good credential management and how the configuration of automated processes can open up security issues. 
+The seal box offers a great example of the importance of good credential management and how the configuration of automated processes can create security issue. 
 
 ## Summary 
 
