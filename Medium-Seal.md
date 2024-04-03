@@ -11,7 +11,7 @@ The seal box offers a great example of the importance of good credential managem
 
 ## Summary 
 
-The Tester found that the target host was well secure with one exception, valid credentials where left assessible on the gitbucket service allowing access to restricted software.
+The Tester found that the target host was well secure with one exception, valid credentials where left assessable on the gitbucket service allowing access to restricted software. This can be mitigated by purging data from the commit history and modifying the password policy to account for the bitbucket repositories. Secondly, an automated backup process introduces a security risk which allowed the tester to read sensitive files. This process needs to be reviewed and folder and file access should be restricted. 
 
 ## Walkthrough
 
