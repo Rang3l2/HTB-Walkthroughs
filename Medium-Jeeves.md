@@ -128,7 +128,7 @@ jeeves\kohsuke
 PS C:\Users\Administrator\.jenkins> 
 ```
 
-This gave access to the host with the "kohsuke" account. The tester checked the account privileges and found that the account had the SeImpersonatePrivilege privilege. This privilege allows a user to imperonate process tokens.
+This gave interactive access to the host as the "kohsuke" account. The tester checked the account privileges and found that the account had the SeImpersonatePrivilege privilege. This privilege allows a user to imperonate process tokens.
 
 ```
 PS C:\Users\Administrator\.jenkins> whoami /priv
