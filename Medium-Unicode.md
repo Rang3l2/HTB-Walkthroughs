@@ -1,4 +1,3 @@
-
 # Unicode
 
 - Introduction
@@ -9,7 +8,7 @@
 
 ## Introduction 
 
-The Blue machine on HTB is a simple yet poignant box that demonstrates the severity of the eternalblue vulnerability. A vulnerability in SMBv1 that allows specially crafted packets to be sent to the host server.  
+The Unicode box gives a good introduction to Json Web Tokens and how they work. There are also a couple good examples of other web vulnerabilities. The box ends with sudo rights abuse.
 
 ## Summary 
 
