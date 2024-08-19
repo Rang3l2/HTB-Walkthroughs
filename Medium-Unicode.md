@@ -190,6 +190,7 @@ once the public key had been place the tester could SSH into the host as root.
 
 ## References
 
+-https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html
 - https://jwt.io/
 - https://portswigger.net/web-security/jwt/lab-jwt-authentication-bypass-via-jku-header-injection
 - https://github.com/ticarpi/jwt_tool/
