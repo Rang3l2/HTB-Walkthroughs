@@ -188,9 +188,15 @@ once the public key had been place the tester could SSH into the host as root.
 
 ## Mitigations 
 
+- Remove the redirection function from the application, and replace links to it with direct links to the relevant target URLs.
+- Maintain a server-side list of all URLs that are permitted for redirection. Instead of passing the target URL as a parameter to the redirector, pass an index into this list.
+- Do not allow the URL as user input for the destination
+- If user input can’t be avoided, ensure that the supplied value is valid, appropriate for the application, and is authorized for the user
+
+
 ## References
 
--https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html
+- https://cheatsheetseries.owasp.org/cheatsheets/Unvalidated_Redirects_and_Forwards_Cheat_Sheet.html
 - https://jwt.io/
 - https://portswigger.net/web-security/jwt/lab-jwt-authentication-bypass-via-jku-header-injection
 - https://github.com/ticarpi/jwt_tool/
