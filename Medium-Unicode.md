@@ -7,6 +7,13 @@
 - Mitigrations
 - References
 
+## Introduction 
+
+The Blue machine on HTB is a simple yet poignant box that demonstrates the severity of the eternalblue vulnerability. A vulnerability in SMBv1 that allows specially crafted packets to be sent to the host server.  
+
+## Summary 
+
+The testing of the Blue host uncovered a severe vulnerability in the a communication Protocol on the target host which could basically give a malicious actor complete control on the host in question. Fortunately, the vulnerability has an official patch that can be applied but blocking the service maybe a helpful temporary and short term fix.
 
 ## Walkthrough
 
