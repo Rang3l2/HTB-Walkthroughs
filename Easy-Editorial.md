@@ -1,7 +1,10 @@
-# Name
+# Editorial
+
+- Introduction
+- Summary
 - Walkthrough
 - Mitigrations
-- References
+- References 
 
 
 ## Editorial
