@@ -9,6 +9,17 @@
 
 ## Editorial
 
+## Indroduction 
+
+The Editorial box shows the importance of access control measures and the danger of server-site request forgery (SSRF). The box next gives an example of the potential dangers of mismanaging development repositories. The box ends with an reminder of the importance of software management. 
+
+
+## Summary 
+
+The box starts with a SSRF vulnerability that allowed the tester to access an internal api. The api contained credential for the "Dev" account. The "Dev" account was able to access the git repository logs and obtain the credential for the "Prod" account. The "Prod" was able able to run a python script, using a vulnerable git module, as root therefore achieve root access.
+
+
+
 The tester started by enumerating the the target using nmap.
 
 ```
@@ -27,11 +38,10 @@ Nmap done: 1 IP address (1 host up) scanned in 340.74 seconds
 
 The scan showed that two ports were open.
 
-The tester found a image upload feature that uses a URL to fetch the image. The tester was able to use this feature to access internal resources,  unintentionally exposed by the feature. The tester used the ZAP tool to brute force internal ports for open HTTP services. The tester selected the port portion of the address to be tested with all 65535 ports.
+The tester found a image upload feature that uses a URL to fetch the image. The tester was able to use this feature to access internal resources, unintentionally exposed by the feature. The tester used the ZAP tool to brute force internal ports for open HTTP services. The tester selected the port portion of the address to be tested with all 65535 ports.
 
 
-
---- Image of the ZAP indruder set up.
+--- Image of the ZAP Fuzzer set up.
 
 
 
@@ -44,7 +54,6 @@ The tester found that port 5000 returned a successful result. Viewing the file r
 {"messages":[{"promotions":{"description":"Retrieve a list of all the promotions in our library.","endpoint":"/api/latest/metadata/messages/promos","methods":"GET"}},{"coupons":{"description":"Retrieve the list of coupons to use in our library.","endpoint":"/api/latest/metadata/messages/coupons","methods":"GET"}},{"new_authors":{"description":"Retrieve the welcome message sended to our new authors.","endpoint":"/api/latest/metadata/messages/authors","methods":"GET"}},{"platform_use":{"description":"Retrieve examples of how to use the platform.","endpoint":"/api/latest/metadata/messages/how_to_use_platform","methods":"GET"}}],"version":[{"changelog":{"description":"Retrieve a list of all the versions and updates of the api.","endpoint":"/api/latest/metadata/changelog","methods":"GET"}},{"latest":{"description":"Retrieve the last version of api.","endpoint":"/api/latest/metadata","methods":"GET"}}]}
 
 ```
-
 
 The "http://127.0.0.1:5000/api/latest/metadata/messages/authors" end contains credentials for the "dev" account.
 
@@ -246,9 +255,13 @@ Server username: root
 
 ## Mitigations
 
-
+- Ensure that internal resoruces are not forgotten or over looked when implomenting security measures.
+- Remove sensitive information from repositories if possible and from log and history files. 
 - Upgrade `GitPython` to version 3.1.30 or higher.
 
 ## References
 
+https://owasp.org/Top10/A01_2021-Broken_Access_Control/
 https://security.snyk.io/vuln/SNYK-PYTHON-GITPYTHON-3113858
+https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository
