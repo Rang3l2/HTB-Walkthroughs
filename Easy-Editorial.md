@@ -9,7 +9,7 @@
 
 ## Editorial
 
-## Indroduction 
+## Introduction 
 
 The Editorial box shows the importance of access control measures and the danger of server-site request forgery (SSRF). The box next gives an example of the potential dangers of mismanaging development repositories. The box ends with an reminder of the importance of software management. 
 
