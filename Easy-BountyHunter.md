@@ -8,7 +8,7 @@
 - References
 
 
-## Indroduction 
+## Introduction 
 
 The Bountyhunter host gives a good look at the issue that can arise from the XML processing and the exploitation of custom scripts along with potently unnecessary privileges.
 
