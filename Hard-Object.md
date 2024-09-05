@@ -15,7 +15,7 @@ The object box shows the importance of access controls, process isolation and th
 
 ## Summary 
 
-The box start with a open registration form which allowed the tester to create an account with the Jenkins service. The Jenkins service has a "Freestyle" project feature that has a batch script build options that allowed the tester to run batch scripts on the box. The tester was able to escalation privileges using the "SeImpersonatePrivilege" privilege held by the "oliver" account. 
+The box start with a open registration form which allowed the tester to create an account on the Jenkins service. The Jenkins service has a "Freestyle" project feature that has a batch script build option. This allowed the tester to run batch scripts on the box. The tester was able to escalation privileges using the "SeImpersonatePrivilege" privilege held by the "oliver" account. 
 
 ## Walkthrough
 
