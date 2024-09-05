@@ -10,16 +10,17 @@
 
 
 ## Introduction 
----
+
 The object box shows the importance of access controls, process isolation and the risks of exposing service to the wider internet. The privilege escalation on this box shows  how even features working as intended also have risks. 
 
 ## Summary 
----
+
 The box start with a open registration form which allowed the tester to create an account with the Jenkins service. The Jenkins service has a "Freestyle" project feature that has a batch script build options that allowed the tester to run batch scripts on the box. The tester was able to escalation privileges using the "SeImpersonatePrivilege" privilege held by the "oliver" account. 
 
 ## Walkthrough
----
+
 The tester started by identifying open ports using "nmap".
+
 ```
 ┌──(kali㉿kali)-[~]
 └─$ nmap -p 80,5985,8080 -sV  10.10.11.132
@@ -34,8 +35,7 @@ PORT     STATE SERVICE VERSION
 Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
-Nmap done: 1 IP address (1 host up) scanned in 7.03 seconds
-                                                                   
+Nmap done: 1 IP address (1 host up) scanned in 7.03 seconds                                                               
 ```
 
 The scan showed that port 8080 was running the Jenkins web service. The Jenkins service allowed open sign up. 
@@ -382,14 +382,12 @@ Mandatory Label\High Mandatory Level       Label            S-1-16-12288
 
 
 ## Mitigations 
----
 
 -  Consider increasing the Security Realm and Authorization configurations to limit feature usage 
 -  If Jenkins external network exposure isn't necessary consider blocking external access. 
 - Review the account Jenkin runs under and consider using a specific account for this purpose, this could limit the damage in the event of a breach. 
 
 ## References
----
 https://www.jenkins.io/doc/book/security/managing-security/
 https://www.jenkins.io/doc/book/security/securing-jenkins/
 https://www.jenkins.io/doc/book/security/access-control/
